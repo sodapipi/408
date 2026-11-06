@@ -1,0 +1,251 @@
+# 408 学习助手 · 章节与分值权重
+# 修改本文件后，运行 `python -m app.seed` 即可重新导入，无需改代码。
+# 父级关系由嵌套层级表达：章下的 sections 自动归属该章。
+# 408 各科权重按真题分值分配；数学二、英语二按题型/讲次分配。
+
+version: 1
+
+subjects:
+  - name: 数据结构
+    group: 408
+    total_weight: 45
+    chapters:
+      - name: 绪论
+        weight: 2
+        sections:
+          - 数据结构的基本概念
+          - 算法和算法评价
+      - name: 线性表
+        weight: 6
+        sections:
+          - 线性表的定义和基本操作
+          - 线性表的顺序表示
+          - 线性表的链式表示
+      - name: 栈、队列和数组
+        weight: 5
+        sections:
+          - 栈
+          - 队列
+          - 栈和队列的应用
+          - 数组和特殊矩阵
+      - name: 串
+        weight: 2
+        sections:
+          - 串的定义和实现
+          - 串的模式匹配
+      - name: 树与二叉树
+        weight: 10
+        sections:
+          - 树的基本概念
+          - 二叉树的概念
+          - 二叉树的遍历和线索二叉树
+          - 树、森林
+          - 树与二叉树的应用
+      - name: 图
+        weight: 7
+        sections:
+          - 图的基本概念
+          - 图的存储及基本操作
+          - 图的遍历
+          - 图的应用
+      - name: 查找
+        weight: 6
+        sections:
+          - 查找的基本概念
+          - 顺序查找和折半查找
+          - 树型查找
+          - B树和B+树
+          - 散列表
+      - name: 排序
+        weight: 7
+        sections:
+          - 排序的基本概念
+          - 插入排序
+          - 交换排序
+          - 选择排序
+          - 归并排序和基数排序
+          - 各种内部排序算法的比较及应用
+          - 外部排序
+
+  - name: 计算机组成原理
+    group: 408
+    total_weight: 45
+    chapters:
+      - name: 计算机系统概述
+        weight: 3
+        sections:
+          - 计算机系统层次结构
+          - 计算机性能指标
+      - name: 数据的表示和运算
+        weight: 8
+        sections:
+          - 数制与编码
+          - 运算方法和运算电路
+          - 浮点数的表示与运算
+      - name: 存储系统
+        weight: 9
+        sections:
+          - 存储器概述
+          - 主存储器
+          - 主存储器与CPU的连接
+          - 外部存储器
+          - 高速缓冲存储器
+          - 虚拟存储器
+      - name: 指令系统
+        weight: 6
+        sections:
+          - 指令系统
+          - 指令的寻址方式
+          - 程序的机器级代码表示
+          - CISC和RISC
+      - name: 中央处理器
+        weight: 10
+        sections:
+          - CPU的功能和基本结构
+          - 指令执行过程
+          - 数据通路的功能和基本结构
+          - 控制器的功能和工作原理
+          - 异常和中断机制
+          - 指令流水线
+      - name: 总线
+        weight: 3
+        sections:
+          - 总线概述
+          - 总线事务和定时
+      - name: 输入/输出系统
+        weight: 6
+        sections:
+          - I/O系统基本概念
+          - I/O接口
+          - I/O方式
+
+  - name: 操作系统
+    group: 408
+    total_weight: 35
+    chapters:
+      - name: 计算机系统概述
+        weight: 2
+        sections:
+          - 操作系统的基本概念
+          - 操作系统的发展与分类
+          - 操作系统运行环境
+      - name: 进程与线程
+        weight: 10
+        sections:
+          - 进程与线程
+          - CPU调度
+          - 同步与互斥
+          - 死锁
+      - name: 内存管理
+        weight: 9
+        sections:
+          - 内存管理基础
+          - 虚拟内存管理
+      - name: 文件管理
+        weight: 8
+        sections:
+          - 文件管理基础
+          - 目录
+          - 文件系统
+          - 文件系统实现
+      - name: 输入/输出管理
+        weight: 6
+        sections:
+          - I/O管理概述
+          - I/O核心子系统
+
+  - name: 计算机网络
+    group: 408
+    total_weight: 25
+    chapters:
+      - name: 计算机网络体系结构
+        weight: 3
+        sections:
+          - 计算机网络概述
+          - 计算机网络体系结构与参考模型
+      - name: 物理层
+        weight: 3
+        sections:
+          - 通信基础
+          - 传输介质
+          - 物理层设备
+      - name: 数据链路层
+        weight: 6
+        sections:
+          - 数据链路层的功能
+          - 组帧
+          - 差错控制
+          - 流量控制与可靠传输机制
+          - 介质访问控制
+          - 局域网
+          - 广域网
+          - 数据链路层设备
+      - name: 网络层
+        weight: 7
+        sections:
+          - 网络层的功能
+          - IPv4
+          - IPv6
+          - 路由协议
+          - 组播
+          - 移动IP
+          - 网络层设备
+      - name: 传输层
+        weight: 4
+        sections:
+          - 传输层提供的服务
+          - UDP
+          - TCP
+      - name: 应用层
+        weight: 2
+        sections:
+          - 网络应用模型
+          - DNS
+          - FTP
+          - 电子邮件
+          - HTTP
+          - 其他
+
+  - name: 数学二
+    group: 公共课
+    total_weight: 150
+    chapters:
+      - name: 高数 · 函数、极限、连续
+        weight: 20
+      - name: 高数 · 一元函数微分学
+        weight: 28
+      - name: 高数 · 一元函数积分学
+        weight: 31
+      - name: 高数 · 多元函数微分学
+        weight: 16
+      - name: 高数 · 二重积分
+        weight: 10
+      - name: 高数 · 常微分方程
+        weight: 10
+      - name: 线代 · 行列式
+        weight: 5
+      - name: 线代 · 矩阵
+        weight: 7
+      - name: 线代 · 向量组
+        weight: 6
+      - name: 线代 · 线性方程组
+        weight: 6
+      - name: 线代 · 特征值与特征向量
+        weight: 6
+      - name: 线代 · 二次型
+        weight: 5
+
+  - name: 英语二
+    group: 公共课
+    total_weight: 100
+    chapters:
+      - name: 完形填空
+        weight: 10
+      - name: 阅读理解
+        weight: 40
+      - name: 新题型
+        weight: 10
+      - name: 翻译
+        weight: 15
+      - name: 写作
+        weight: 25

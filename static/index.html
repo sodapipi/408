@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f6f6f3">
+  <title>408 学习助手 · 错题本与掌握度</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📘</text></svg>">
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="/static/vendor/echarts.min.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="shell topbar-inner">
+      <a class="brand" href="#overview" data-view="overview" aria-label="回到概览">
+        <span class="brand-mark">408</span>
+        <span class="brand-copy">
+          <strong>学习助手</strong>
+          <small>错题本 · 掌握度诊断</small>
+        </span>
+      </a>
+      <nav class="nav" aria-label="主导航">
+        <button type="button" class="nav-item is-active" data-view="overview">概览</button>
+        <button type="button" class="nav-item" data-view="entry">录题</button>
+        <button type="button" class="nav-item" data-view="list">错题本</button>
+        <button type="button" class="nav-item" data-view="review">重做</button>
+        <button type="button" class="nav-item" data-view="mastery">掌握度</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="shell">
+    <!-- 概览 -->
+    <section id="view-overview" class="view is-active" aria-labelledby="overviewTitle">
+      <div class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="pulse-dot"></span>408 · 英语二 · 数学二</p>
+          <h1 id="overviewTitle">把错题，变成掌握度。</h1>
+          <p class="hero-sub">记录每一次卡壳，找到最该补的那几章。</p>
+        </div>
+        <div class="hero-side">
+          <span class="today-label" id="todayLabel"></span>
+          <button type="button" class="btn btn-primary" data-view="entry">
+            开始录题
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="stat-grid">
+        <article class="stat-card">
+          <span class="stat-icon tone-indigo" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </span>
+          <div class="stat-copy">
+            <span class="stat-label">今日新增</span>
+            <span class="stat-value" id="statToday">0</span>
+          </div>
+          <span class="stat-suffix">道</span>
+        </article>
+        <article class="stat-card">
+          <span class="stat-icon tone-rose" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 8v5m0 3h.01M10.3 3.9 2.8 17a2 2 0 0 0 1.7 3h15a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          </span>
+          <div class="stat-copy">
+            <span class="stat-label">待掌握</span>
+            <span class="stat-value" id="statWrong">0</span>
+          </div>
+          <span class="stat-suffix">道</span>
+        </article>
+        <article class="stat-card">
+          <span class="stat-icon tone-slate" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3V4Zm0 13a3 3 0 0 1 3-3h11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          </span>
+          <div class="stat-copy">
+            <span class="stat-label">累计错题</span>
+            <span class="stat-value" id="statTotal">0</span>
+          </div>
+          <span class="stat-suffix">道</span>
+        </article>
+        <article class="stat-card">
+          <span class="stat-icon tone-teal" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="m5 12.5 4.2 4.2L19 6.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <div class="stat-copy">
+            <span class="stat-label">已掌握</span>
+            <span class="stat-value" id="statMastered">0</span>
+          </div>
+          <span class="stat-suffix">道</span>
+        </article>
+      </div>
+
+      <div class="section-head">
+        <div>
+          <h2>最该补的三章</h2>
+          <p>按「分值权重 × 掌握度缺口」排序</p>
+        </div>
+        <span class="soft-note" id="priorityNote"></span>
+      </div>
+      <div class="priority-grid" id="priorityList"></div>
+
+      <section class="card heatmap-card" aria-labelledby="heatmapTitle">
+        <div class="card-head">
+          <div>
+            <h2 id="heatmapTitle">各科掌握度</h2>
+            <p>每格是一章，颜色越深代表掌握度越高</p>
+          </div>
+          <div class="heat-legend" aria-hidden="true">
+            <span>低</span><i class="heat-gradient"></i><span>高</span>
+          </div>
+        </div>
+        <div class="heatmap-scroll">
+          <div id="heatmapChart"></div>
+        </div>
+        <p class="heatmap-foot">横轴为各科内部章节序号，悬停或点按可查看章名；灰色代表该章暂无错题。</p>
+      </section>
+    </section>
+
+    <!-- 录题 -->
+    <section id="view-entry" class="view" aria-labelledby="entryTitle">
+      <div class="page-head">
+        <div>
+          <p class="eyebrow">新增记录</p>
+          <h2 id="entryTitle">录一道错题</h2>
+          <p>照片或文字都行，选好章节和错因就能收进错题本。</p>
+        </div>
+        <span class="soft-note">自动记住上次的科目与章节</span>
+      </div>
+
+      <div class="entry-grid">
+        <section class="card upload-card">
+          <div class="card-head compact">
+            <h3>题目照片</h3>
+            <span>可选</span>
+          </div>
+          <label class="dropzone" id="dropzone" for="imageInput">
+            <input id="imageInput" type="file" accept="image/*" hidden>
+            <span class="drop-empty" id="dropEmpty">
+              <span class="upload-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M12 16V5m0 0-3.5 3.5M12 5l3.5 3.5M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              <strong>点击上传或拖入图片</strong>
+              <span>支持相机拍摄 · JPG / PNG · 15MB 内</span>
+            </span>
+            <img id="imagePreview" alt="题目照片预览" hidden>
+            <button type="button" class="image-remove" id="imageRemove" aria-label="移除图片" hidden>×</button>
+          </label>
+          <p class="upload-tip">只上传图片也可以保存，文字稍后再补。</p>
+        </section>
+
+        <form class="card entry-form" id="entryForm" novalidate>
+          <div class="field-row three">
+            <div class="field">
+              <label for="entrySubject">科目</label>
+              <select id="entrySubject"></select>
+            </div>
+            <div class="field">
+              <label for="entryChapter">章</label>
+              <select id="entryChapter"></select>
+            </div>
+            <div class="field">
+              <label for="entrySection">节</label>
+              <select id="entrySection"></select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="entryContent">题目文字 <span class="label-hint">可选，与照片至少填一项</span></label>
+            <textarea id="entryContent" placeholder="粘贴题干、选项或关键条件…"></textarea>
+          </div>
+
+          <div class="field">
+            <label>错因标签 <span class="label-hint">必选</span></label>
+            <div class="cause-chips" id="entryCauses" role="group" aria-label="错因标签"></div>
+          </div>
+
+          <div class="field-row three">
+            <div class="field">
+              <label for="entrySource">来源 <span class="label-hint">可选</span></label>
+              <input id="entrySource" type="text" placeholder="如 王道 5.3 / 真题 2023" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="entryMyAnswer">我的答案 <span class="label-hint">可选</span></label>
+              <input id="entryMyAnswer" type="text" placeholder="写下当时的答案" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="entryCorrectAnswer">正确答案 <span class="label-hint">可选</span></label>
+              <input id="entryCorrectAnswer" type="text" placeholder="订正后的答案" autocomplete="off">
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <p class="form-hint">保存后保留当前科目与章节，方便连续录入</p>
+            <button class="btn btn-primary" type="submit" id="saveBtn">保存错题</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- 错题本 -->
+    <section id="view-list" class="view" aria-labelledby="listTitle">
+      <div class="page-head">
+        <div>
+          <p class="eyebrow">错题本</p>
+          <h2 id="listTitle">所有错题</h2>
+          <p>按科目、章节、错因和时间筛选，点开可看原图与详情。</p>
+        </div>
+      </div>
+
+      <form class="card filter-card" id="listFilters">
+        <div class="filter-row">
+          <div class="field">
+            <label class="sr-only" for="filterSubject">科目</label>
+            <select id="filterSubject"></select>
+          </div>
+          <div class="field">
+            <label class="sr-only" for="filterChapter">章节</label>
+            <select id="filterChapter"></select>
+          </div>
+          <div class="field">
+            <label class="sr-only" for="filterCause">错因</label>
+            <select id="filterCause"></select>
+          </div>
+          <div class="segmented" id="statusSegmented" role="group" aria-label="掌握状态">
+            <button type="button" class="is-active" data-status="">全部</button>
+            <button type="button" data-status="wrong">未掌握</button>
+            <button type="button" data-status="mastered">已掌握</button>
+          </div>
+        </div>
+        <div class="filter-row second">
+          <div class="date-range">
+            <label for="filterFrom">从</label>
+            <input id="filterFrom" type="date">
+            <label for="filterTo">到</label>
+            <input id="filterTo" type="date">
+          </div>
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="m16 16 4 4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+            <input id="filterQuery" type="search" placeholder="搜索题干、来源、答案…" autocomplete="off">
+          </div>
+          <button type="button" class="btn btn-ghost" id="filterReset">重置</button>
+        </div>
+      </form>
+
+      <div class="list-meta">
+        <span id="listCount">共 0 条</span>
+        <span>点击任意一条查看原图与详情</span>
+      </div>
+      <div class="question-list" id="questionList"></div>
+    </section>
+
+    <!-- 重做 -->
+    <section id="view-review" class="view" aria-labelledby="reviewTitle">
+      <div class="page-head">
+        <div>
+          <p class="eyebrow">重做模式</p>
+          <h2 id="reviewTitle">再错一次，才算真会</h2>
+          <p>从待掌握错题中随机抽题，标记结果并记录复习时间。</p>
+        </div>
+      </div>
+
+      <section class="card review-setup" id="reviewSetup" aria-label="抽题范围">
+        <div class="review-config">
+          <div class="field">
+            <label for="reviewSubject">科目</label>
+            <select id="reviewSubject"></select>
+          </div>
+          <div class="field">
+            <label for="reviewChapter">章节</label>
+            <select id="reviewChapter"></select>
+          </div>
+          <div class="field">
+            <label for="reviewCount">数量</label>
+            <select id="reviewCount">
+              <option value="5">5 道</option>
+              <option value="10" selected>10 道</option>
+              <option value="20">20 道</option>
+            </select>
+          </div>
+          <button type="button" class="btn btn-primary" id="startReview">开始抽题</button>
+        </div>
+        <p class="review-note">只抽取「未掌握」的错题；标记掌握后不再进入重做池。</p>
+      </section>
+
+      <div class="card empty-state" id="reviewEmpty" hidden>
+        <span class="empty-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </span>
+        <h3>这个范围暂时没有待重做的错题</h3>
+        <p>换一个科目或章节，或者先去录几道错题。</p>
+        <button type="button" class="btn btn-soft" data-view="entry">去录题</button>
+      </div>
+
+      <section class="card review-card" id="reviewSession" hidden aria-label="重做题目">
+        <div class="review-top">
+          <div class="review-progress">
+            <span id="reviewStep">第 1 / 5 题</span>
+            <span class="progress-track"><i id="reviewProgress"></i></span>
+          </div>
+          <button type="button" class="link-btn" id="endReview">结束本轮</button>
+        </div>
+        <div class="review-question">
+          <div class="tag-row" id="reviewTags"></div>
+          <p class="review-content" id="reviewContent"></p>
+          <a class="review-image-link" id="reviewImageLink" target="_blank" rel="noopener" hidden>
+            <img id="reviewImage" alt="题目照片">
+          </a>
+        </div>
+        <div class="review-toggle">
+          <p class="review-hint">先自己重做一遍，再查看答案。</p>
+          <button type="button" class="btn btn-soft" id="showAnswer">查看答案</button>
+        </div>
+        <div class="review-answer" id="reviewAnswer" hidden>
+          <div class="answer-block">
+            <span>我的答案</span>
+            <p id="reviewMy"></p>
+          </div>
+          <div class="answer-block correct">
+            <span>正确答案</span>
+            <p id="reviewCorrect"></p>
+          </div>
+        </div>
+        <div class="review-actions">
+          <button type="button" class="btn btn-danger-soft" data-result="wrong" disabled>仍错</button>
+          <button type="button" class="btn btn-success" data-result="mastered" disabled>掌握</button>
+        </div>
+      </section>
+
+      <section class="card review-summary" id="reviewSummary" hidden aria-label="本轮结果">
+        <span class="summary-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="m5 12.5 4.2 4.2L19 6.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <h3>本轮完成</h3>
+        <div class="summary-stats">
+          <div><b id="summaryMastered">0</b><span>掌握</span></div>
+          <div><b id="summaryWrong">0</b><span>仍错</span></div>
+        </div>
+        <p class="summary-note" id="summaryNote"></p>
+        <div class="summary-actions">
+          <button type="button" class="btn btn-primary" id="reviewAgain">再抽一组</button>
+          <button type="button" class="btn btn-ghost" data-view="overview">返回概览</button>
+        </div>
+      </section>
+    </section>
+
+    <!-- 掌握度 -->
+    <section id="view-mastery" class="view" aria-labelledby="masteryTitle">
+      <div class="page-head">
+        <div>
+          <p class="eyebrow">章节掌握度</p>
+          <h2 id="masteryTitle">每一章的真实状态</h2>
+          <p>错误率 = 该章仍未掌握的错题 / 该章累计错题，重做后会更新。</p>
+        </div>
+      </div>
+      <div class="mastery-list" id="masteryList"></div>
+    </section>
+  </main>
+
+  <!-- 详情弹窗 -->
+  <div class="modal" id="detailModal" hidden>
+    <div class="modal-backdrop" data-close="detail"></div>
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+      <header class="modal-head">
+        <div>
+          <p class="eyebrow" id="detailEyebrow"></p>
+          <h2 id="detailTitle">错题详情</h2>
+        </div>
+        <button type="button" class="icon-btn" data-close="detail" aria-label="关闭">
+          <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+      </header>
+      <div class="modal-body">
+        <a class="detail-image-link" id="detailImageLink" target="_blank" rel="noopener" hidden>
+          <img id="detailImage" alt="题目原图">
+          <span>点击查看原图</span>
+        </a>
+        <p class="detail-content" id="detailContent"></p>
+        <div class="detail-answers">
+          <div class="answer-block">
+            <span>我的答案</span>
+            <p id="detailMyAnswer"></p>
+          </div>
+          <div class="answer-block correct">
+            <span>正确答案</span>
+            <p id="detailCorrectAnswer"></p>
+          </div>
+        </div>
+        <dl class="detail-meta" id="detailMeta"></dl>
+
+        <section class="detail-edit" aria-labelledby="editTitle">
+          <div class="edit-head">
+            <h3 id="editTitle">修正分类</h3>
+            <span>改完立即生效</span>
+          </div>
+          <div class="field-row three">
+            <div class="field">
+              <label for="detailChapter">章</label>
+              <select id="detailChapter"></select>
+            </div>
+            <div class="field">
+              <label for="detailSection">节</label>
+              <select id="detailSection"></select>
+            </div>
+            <div class="field cause-field">
+              <label>错因标签</label>
+              <div class="cause-chips compact" id="detailCauses" role="group" aria-label="错因标签"></div>
+            </div>
+          </div>
+          <div class="edit-actions">
+            <button type="button" class="btn btn-primary" id="detailSave">保存修改</button>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden>
+    <span class="toast-mark" id="toastMark">✓</span>
+    <span id="toastText"></span>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
