@@ -10,6 +10,13 @@
       </view>
     </view>
 
+    <view v-if="error" class="card load-error">
+      <view class="load-error-title">后端连接失败</view>
+      <view class="load-error-text">{{ error }}</view>
+      <button class="btn btn-soft btn-sm" @click="load">重试</button>
+    </view>
+    <view v-else-if="loading" class="card empty">正在加载概览…</view>
+    <template v-else>
     <view class="stat-grid">
       <view class="card stat-card">
         <view class="stat-label">今日新增</view>
@@ -69,6 +76,7 @@
       <!-- #endif -->
       <view class="heatmap-foot">横轴为各科内部章节序号，点按可查看章名；灰色代表该章暂无错题。</view>
     </view>
+    </template>
   </view>
 </template>
 
@@ -166,14 +174,21 @@ export default {
       priority: [],
       heatmap: { subjects: [], max_chapters: 0, cells: [] },
       chart: null,
+      loading: true,
+      error: '',
       // #ifdef MP-WEIXIN
       ec: {
         onInit(canvas, width, height, dpr) {
-          const chart = echarts.init(canvas, null, { width, height, devicePixelRatio: dpr })
-          canvas.setChart(chart)
-          self.chart = chart
-          chart.setOption(buildOption(self.heatmap))
-          return chart
+          try {
+            const chart = echarts.init(canvas, null, { width, height, devicePixelRatio: dpr })
+            canvas.setChart(chart)
+            self.chart = chart
+            chart.setOption(buildOption(self.heatmap))
+            return chart
+          } catch (e) {
+            console.error('echarts init failed', e)
+            return null
+          }
         }
       }
       // #endif
@@ -181,7 +196,12 @@ export default {
   },
   watch: {
     heatmap() {
-      if (this.chart) this.chart.setOption(buildOption(this.heatmap), true)
+      if (!this.chart) return
+      try {
+        this.chart.setOption(buildOption(this.heatmap), true)
+      } catch (e) {
+        console.error('heatmap render failed', e)
+      }
     }
   },
   onShow() {
@@ -205,12 +225,16 @@ export default {
     initH5Chart() {
       const el = document.getElementById('heatmap-box')
       if (!el) return
-      this.chart = echarts.init(el, null, { renderer: 'canvas' })
-      this.chart.setOption(buildOption(this.heatmap))
-      this.onResize = () => {
-        if (this.chart) this.chart.resize()
+      try {
+        this.chart = echarts.init(el, null, { renderer: 'canvas' })
+        this.chart.setOption(buildOption(this.heatmap))
+        this.onResize = () => {
+          if (this.chart) this.chart.resize()
+        }
+        window.addEventListener('resize', this.onResize)
+      } catch (e) {
+        console.error('heatmap init failed', e)
       }
-      window.addEventListener('resize', this.onResize)
     },
     // #endif
     setToday() {
@@ -218,7 +242,25 @@ export default {
       const week = ['日', '一', '二', '三', '四', '五', '六']
       this.todayLabel = now.getMonth() + 1 + ' 月 ' + now.getDate() + ' 日 · 周' + week[now.getDay()]
     },
+    describeError(err) {
+      const raw = err && err.message ? err.message : err && typeof err === 'object' ? JSON.stringify(err) : String(err)
+      if (/not in domain list/i.test(raw)) {
+        return '域名未加入白名单：在开发者工具「详情 → 本地设置」勾选「不校验合法域名」，或在小程序后台配置 request 合法域名。原始信息：' + raw
+      }
+      if (/timeout|timed?\s?out/i.test(raw)) {
+        return '请求超时：确认后端已启动、手机与电脑连同一 Wi-Fi、防火墙已放行 8000 端口。原始信息：' + raw
+      }
+      if (/ssl|handshake|certificate/i.test(raw)) {
+        return 'HTTPS 证书或 TLS 握手失败：检查域名证书是否有效，或临时改用 http 调试。原始信息：' + raw
+      }
+      if (/request:fail|connect|refused|fail|errCode/i.test(raw)) {
+        return '连接失败：确认后端已启动、手机与电脑在同一 Wi-Fi、防火墙已放行 8000 端口。原始信息：' + raw
+      }
+      return raw || '未知错误：' + String(err)
+    },
     load() {
+      this.loading = true
+      this.error = ''
       api.overview()
         .then((data) => {
           this.stats = {
@@ -229,9 +271,13 @@ export default {
           }
           this.priority = data.priority || []
           this.heatmap = data.heatmap || { subjects: [], max_chapters: 0, cells: [] }
+          this.loading = false
         })
         .catch((err) => {
-          uni.showToast({ title: err.message || '加载失败', icon: 'none' })
+          this.loading = false
+          console.warn('[overview] request failed:', err)
+          this.error = this.describeError(err)
+          uni.showToast({ title: '概览加载失败', icon: 'none' })
         })
     },
     pct(value) {
@@ -289,4 +335,7 @@ export default {
 .score-label { font-size: 10px; color: #a7a9b0; }
 .chart-box { width: 100%; height: 250px; }
 .heatmap-foot { margin-top: 10px; font-size: 11px; color: #a7a9b0; line-height: 1.5; }
+.load-error { margin-top: 18px; border-left: 3px solid #e11d48; }
+.load-error-title { font-size: 14px; font-weight: 700; color: #b91c1c; }
+.load-error-text { margin: 6px 0 10px; font-size: 12px; color: #85878f; word-break: break-all; }
 </style>

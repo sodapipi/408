@@ -78,7 +78,19 @@ export function request(path, options = {}) {
         }
       },
       fail(err) {
-        reject(new Error(err && err.errMsg ? err.errMsg : '网络请求失败'))
+        // 不同基础库返回的失败对象结构不同（有的只有 errCode），统一拼成可读字符串
+        const raw =
+          err && typeof err === 'object'
+            ? [
+                err.errMsg,
+                err.message,
+                err.errCode !== undefined ? 'errCode ' + err.errCode : '',
+                JSON.stringify(err)
+              ]
+                .filter(Boolean)
+                .join(' · ')
+            : String(err)
+        reject(new Error(raw || '网络请求失败'))
       }
     })
   })
@@ -139,7 +151,19 @@ export function postForm(path, formData = {}) {
         }
       },
       fail(err) {
-        reject(new Error(err && err.errMsg ? err.errMsg : '网络请求失败'))
+        // 不同基础库返回的失败对象结构不同（有的只有 errCode），统一拼成可读字符串
+        const raw =
+          err && typeof err === 'object'
+            ? [
+                err.errMsg,
+                err.message,
+                err.errCode !== undefined ? 'errCode ' + err.errCode : '',
+                JSON.stringify(err)
+              ]
+                .filter(Boolean)
+                .join(' · ')
+            : String(err)
+        reject(new Error(raw || '网络请求失败'))
       }
     })
   })
