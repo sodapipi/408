@@ -40,7 +40,7 @@ npm run dev:mp-weixin
 
 1. 打开微信开发者工具 → 导入项目；
 2. 目录选择 `E:\record\mobile\dist\build\mp-weixin`（开发模式则选 `dist\dev\mp-weixin`）；
-3. AppID 使用测试号 `touristappid`（已写进 `src/manifest.json`，无需真实 AppID 也能预览）；
+3. AppID 已配置真实小程序号 `wx9aea3b91f170336b`（写在 `src/manifest.json` 的 `mp-weixin.appid`），产物里的 `project.config.json` 会自动带上，用该账号扫码登录开发者工具即可；
 4. 在「详情 → 本地设置」勾选 **不校验合法域名、web-view（业务域名）、TLS 版本以及 HTTPS 证书**（因为开发阶段直连 `http://127.0.0.1:8000`）；
 5. 点击编译即可。前置条件：后端 `run_server.py` 正在运行。
 

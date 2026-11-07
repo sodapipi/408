@@ -30,7 +30,13 @@ page {
     #f6f6f3;
 }
 
+/* 小程序 WXSS 不支持通配选择器，改为显式列举组件 */
+/* #ifdef H5 */
 * { box-sizing: border-box; }
+/* #endif */
+/* #ifdef MP-WEIXIN */
+page, view, text, image, button, input, textarea, scroll-view, swiper, swiper-item { box-sizing: border-box; }
+/* #endif */
 
 /* ---------- 文字 ---------- */
 .eyebrow {

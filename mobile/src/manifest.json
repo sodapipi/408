@@ -12,7 +12,8 @@
   },
   "quickapp": {},
   "mp-weixin": {
-    "appid": "touristappid",
+    "appid": "wx9aea3b91f170336b",
+    "lazyCodeLoading": "requiredComponents",
     "setting": {
       "urlCheck": false,
       "es6": true,
