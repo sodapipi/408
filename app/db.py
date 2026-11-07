@@ -1,4 +1,4 @@
-"""SQLite 连接与表结构。数据库位置：E:\\助手\\data\\assistant.db"""
+"""SQLite 连接与表结构。数据库位置：<项目根目录>/data/assistant.db（由 BASE_DIR 推导）"""
 from __future__ import annotations
 
 import sqlite3

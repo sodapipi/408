@@ -4,21 +4,36 @@
 
 ## 启动
 
-在 `E:\助手` 目录下任选一种方式：
+在项目根目录下任选一种方式（以下命令均在项目根目录执行）：
 
 ```powershell
-# 方式一：双击 start.bat，或在 PowerShell 里执行
+# 方式一：双击 start.bat，或在 PowerShell 里执行（脚本内已写死 py311 解释器，无需先激活 conda）
 .\start.bat
 
-# 方式二：直接使用 py311 解释器（推荐）
+# 方式二：直接命令行启动
 C:\ProgramData\anaconda3\envs\py311\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
 浏览器打开：**http://127.0.0.1:8000**
 
-手机与电脑连同一个 Wi-Fi 后访问：**http://192.168.1.43:8000**（局域网 IP 变化时以 `ipconfig` 为准）。
+手机与电脑连同一个 Wi-Fi 后访问：启动时终端会打印自动检测到的局域网地址（形如 `http://192.168.x.x:8000`）；检测不到时用 `ipconfig` 查看本机 IPv4 地址。
 
-> 本机 conda 的 `conda activate py311` 会错误落回 base 的 Python 3.14，因此不要用激活命令，直接使用上面的解释器绝对路径。
+`start.bat` 为纯 ASCII + CRLF 批处理，不依赖激活状态；解释器路径不存在、目录不对或端口被占用时会打印明确提示并停在 `pause`，方便看报错。
+
+**端口被占用时换端口**：
+
+```powershell
+netstat -ano | findstr :8000        # 最后一列是占用进程的 PID
+
+# 临时指定端口启动（bat 会自动使用 ASSISTANT_PORT）
+set ASSISTANT_PORT=8001
+.\start.bat
+
+# 或用命令行直接换端口
+C:\ProgramData\anaconda3\envs\py311\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8001
+```
+
+> 关于 conda：交互式终端里 `conda activate py311` 是正常的（提示符会显示 `(py311)`）；之前观察到的“落回 base”只出现在 `conda run -n py311` 这类非交互调用中。`start.bat` 统一使用解释器绝对路径，因此激活或不激活都能启动。
 
 首次启动会自动建库并导入 `chapters.yaml`。若换机器，先补依赖：
 
@@ -26,12 +41,13 @@ C:\ProgramData\anaconda3\envs\py311\python.exe -m uvicorn app.main:app --host 0.
 C:\ProgramData\anaconda3\envs\py311\python.exe -m pip install -r requirements.txt
 ```
 
-停止服务：在运行窗口按 `Ctrl+C`。
+停止服务：在运行窗口按 `Ctrl+C`，随后按任意键关闭窗口。
+
 
 ## 目录结构
 
 ```
-E:\助手
+项目根目录
 ├─ app\
 │  ├─ main.py          FastAPI 路由与业务逻辑
 │  ├─ db.py            SQLite 表结构与连接
@@ -56,14 +72,15 @@ E:\助手
 
 ## 数据库与备份
 
-- 数据库：`E:\助手\data\assistant.db`
-- 照片：`E:\助手\uploads\`
+- 数据库：`data\assistant.db`（相对项目根目录）
+- 照片：`uploads\`（相对项目根目录）
 - 服务运行时数据库为 WAL 模式，`data\` 下可能同时出现 `assistant.db-wal`、`assistant.db-shm`。
 
 **备份**（服务运行中也可执行，会生成一致性快照）：
 
 ```powershell
-C:\ProgramData\anaconda3\envs\py311\python.exe -c "import sqlite3, pathlib; src=sqlite3.connect(r'E:\助手\data\assistant.db'); dst=sqlite3.connect(r'E:\助手\data\backup.db'); src.backup(dst); dst.close(); src.close(); print('backup ok')"
+# 在项目根目录执行
+C:\ProgramData\anaconda3\envs\py311\python.exe -c "import sqlite3; src=sqlite3.connect(r'data/assistant.db'); dst=sqlite3.connect(r'data/backup.db'); src.backup(dst); dst.close(); src.close(); print('backup ok')"
 ```
 
 然后把 `data\backup.db` 和 `uploads\` 一起复制到别处即可。恢复时先停止服务，把备份文件放回 `data\assistant.db`，再放回对应的 `uploads` 照片。
@@ -75,7 +92,7 @@ C:\ProgramData\anaconda3\envs\py311\python.exe -c "import sqlite3, pathlib; src=
 改完文件后执行：
 
 ```powershell
-cd E:\助手
+# 在项目根目录执行
 C:\ProgramData\anaconda3\envs\py311\python.exe -m app.seed
 ```
 
