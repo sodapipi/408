@@ -1,0 +1,78 @@
+{
+  "pages": [
+    {
+      "path": "pages/home/home",
+      "style": {
+        "navigationBarTitleText": "概览",
+        "usingComponents": {
+          "ec-canvas": "/wxcomponents/ec-canvas/ec-canvas"
+        }
+      }
+    },
+    {
+      "path": "pages/entry/entry",
+      "style": { "navigationBarTitleText": "录题" }
+    },
+    {
+      "path": "pages/list/list",
+      "style": { "navigationBarTitleText": "错题本" }
+    },
+    {
+      "path": "pages/detail/detail",
+      "style": { "navigationBarTitleText": "错题详情" }
+    },
+    {
+      "path": "pages/review/review",
+      "style": { "navigationBarTitleText": "重做" }
+    },
+    {
+      "path": "pages/politics/politics",
+      "style": { "navigationBarTitleText": "政治" }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarBackgroundColor": "#f6f6f3",
+    "navigationBarTitleText": "408 学习助手",
+    "backgroundColor": "#f6f6f3"
+  },
+  "tabBar": {
+    "color": "#85878f",
+    "selectedColor": "#4f46e5",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "fontSize": "11px",
+    "list": [
+      {
+        "pagePath": "pages/home/home",
+        "text": "概览",
+        "iconPath": "static/tab-home.png",
+        "selectedIconPath": "static/tab-home-active.png"
+      },
+      {
+        "pagePath": "pages/entry/entry",
+        "text": "录题",
+        "iconPath": "static/tab-entry.png",
+        "selectedIconPath": "static/tab-entry-active.png"
+      },
+      {
+        "pagePath": "pages/list/list",
+        "text": "错题本",
+        "iconPath": "static/tab-list.png",
+        "selectedIconPath": "static/tab-list-active.png"
+      },
+      {
+        "pagePath": "pages/review/review",
+        "text": "重做",
+        "iconPath": "static/tab-review.png",
+        "selectedIconPath": "static/tab-review-active.png"
+      },
+      {
+        "pagePath": "pages/politics/politics",
+        "text": "政治",
+        "iconPath": "static/tab-politics.png",
+        "selectedIconPath": "static/tab-politics-active.png"
+      }
+    ]
+  }
+}

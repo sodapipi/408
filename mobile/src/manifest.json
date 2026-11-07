@@ -1,0 +1,31 @@
+{
+  "name": "408学习助手",
+  "appid": "",
+  "description": "408 学习助手 · 错题本与掌握度（uni-app 版）",
+  "versionName": "1.0.0",
+  "versionCode": "100",
+  "transformPx": false,
+  "app-plus": {
+    "usingComponents": true,
+    "nvueStyleCompiler": "uni-app",
+    "compilerVersion": 3
+  },
+  "quickapp": {},
+  "mp-weixin": {
+    "appid": "touristappid",
+    "setting": {
+      "urlCheck": false,
+      "es6": true,
+      "postcss": true,
+      "minified": true
+    },
+    "usingComponents": true
+  },
+  "h5": {
+    "title": "408 学习助手",
+    "router": {
+      "mode": "hash"
+    }
+  },
+  "vueVersion": "3"
+}
