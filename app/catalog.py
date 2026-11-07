@@ -10,6 +10,14 @@ from .db import BASE_DIR
 
 CATALOG_PATH = BASE_DIR / "chapters.yaml"
 CAUSES = ["概念不清", "计算失误", "审题错", "记不住", "方法不会"]
+POLITICS_CAUSES = [
+    "知识点没记住",
+    "概念混淆",
+    "审题没看清",
+    "时政没覆盖",
+    "多选题漏选",
+    "纯蒙的",
+]
 
 
 def load_catalog(path: Path | None = None) -> list[dict]:
@@ -218,4 +226,4 @@ def get_catalog(conn: sqlite3.Connection) -> dict:
         if chapter is not None:
             chapter["sections"].append({"id": row["id"], "title": row["title"]})
 
-    return {"subjects": subjects, "causes": CAUSES}
+    return {"subjects": subjects, "causes": CAUSES, "politics_causes": POLITICS_CAUSES}

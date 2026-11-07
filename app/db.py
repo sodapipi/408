@@ -35,6 +35,10 @@ CREATE TABLE IF NOT EXISTS questions (
     section_id         INTEGER REFERENCES chapters(id),
     cause              TEXT NOT NULL,
     content            TEXT NOT NULL DEFAULT '',
+    ocr_raw            TEXT NOT NULL DEFAULT '',
+    qtype              TEXT NOT NULL DEFAULT 'regular',
+    option_analysis    TEXT NOT NULL DEFAULT '',
+    exam_year          TEXT NOT NULL DEFAULT '',
     image_path         TEXT,
     source             TEXT NOT NULL DEFAULT '',
     my_answer          TEXT NOT NULL DEFAULT '',
@@ -43,6 +47,7 @@ CREATE TABLE IF NOT EXISTS questions (
     review_count       INTEGER NOT NULL DEFAULT 0,
     last_review_at     TEXT,
     last_review_result TEXT,
+    deleted_at         TEXT NOT NULL DEFAULT '',
     created_at         TEXT NOT NULL,
     updated_at         TEXT NOT NULL
 );
@@ -50,6 +55,46 @@ CREATE INDEX IF NOT EXISTS idx_questions_chapter ON questions(chapter_id);
 CREATE INDEX IF NOT EXISTS idx_questions_created ON questions(created_at);
 CREATE INDEX IF NOT EXISTS idx_questions_status ON questions(status);
 CREATE INDEX IF NOT EXISTS idx_questions_cause ON questions(cause);
+
+-- ===== 政治模块 =====
+
+CREATE TABLE IF NOT EXISTS knowledge_cards (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    chapter_id    INTEGER NOT NULL REFERENCES chapters(id),
+    section_id    INTEGER REFERENCES chapters(id),
+    title         TEXT NOT NULL,
+    body          TEXT NOT NULL DEFAULT '',
+    view_count    INTEGER NOT NULL DEFAULT 0,
+    last_viewed_at TEXT,
+    self_rating   TEXT,
+    deleted_at    TEXT NOT NULL DEFAULT '',
+    created_at    TEXT NOT NULL,
+    updated_at    TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_cards_chapter ON knowledge_cards(chapter_id, section_id);
+
+CREATE TABLE IF NOT EXISTS current_affairs (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_date    TEXT NOT NULL,
+    title         TEXT NOT NULL,
+    related_point TEXT NOT NULL DEFAULT '',
+    tags          TEXT NOT NULL DEFAULT '',
+    note          TEXT NOT NULL DEFAULT '',
+    deleted_at    TEXT NOT NULL DEFAULT '',
+    created_at    TEXT NOT NULL,
+    updated_at    TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_affairs_date ON current_affairs(event_date);
+
+CREATE TABLE IF NOT EXISTS answer_frameworks (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    question_type TEXT NOT NULL,
+    template      TEXT NOT NULL DEFAULT '',
+    keywords      TEXT NOT NULL DEFAULT '',
+    deleted_at    TEXT NOT NULL DEFAULT '',
+    created_at    TEXT NOT NULL,
+    updated_at    TEXT NOT NULL
+);
 
 -- 复习事件流水，为 v2 的间隔复习队列预留
 CREATE TABLE IF NOT EXISTS review_events (
@@ -67,7 +112,30 @@ def init_db() -> None:
     UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
     with closing(sqlite3.connect(DB_PATH)) as conn:
         conn.executescript(SCHEMA)
+        migrate(conn)
         conn.commit()
+
+
+def migrate(conn: sqlite3.Connection) -> None:
+    """兼容已有数据库：只加列、加表，不重建。"""
+    columns = {row[1] for row in conn.execute("PRAGMA table_info(questions)")}
+    additions = {
+        "ocr_raw": "TEXT NOT NULL DEFAULT ''",
+        "qtype": "TEXT NOT NULL DEFAULT 'regular'",
+        "option_analysis": "TEXT NOT NULL DEFAULT ''",
+        "exam_year": "TEXT NOT NULL DEFAULT ''",
+        "deleted_at": "TEXT NOT NULL DEFAULT ''",
+    }
+    for name, ddl in additions.items():
+        if name not in columns:
+            conn.execute(f"ALTER TABLE questions ADD COLUMN {name} {ddl}")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_questions_qtype ON questions(qtype)")
+
+    # 政治三张表同样只加删除标记列（软删除：有值即已进回收站）
+    for table in ("knowledge_cards", "current_affairs", "answer_frameworks"):
+        existing = {row[1] for row in conn.execute(f"PRAGMA table_info({table})")}
+        if "deleted_at" not in existing:
+            conn.execute(f"ALTER TABLE {table} ADD COLUMN deleted_at TEXT NOT NULL DEFAULT ''")
 
 
 def get_conn() -> sqlite3.Connection:

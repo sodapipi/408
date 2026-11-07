@@ -25,6 +25,7 @@
         <button type="button" class="nav-item" data-view="list">错题本</button>
         <button type="button" class="nav-item" data-view="review">重做</button>
         <button type="button" class="nav-item" data-view="mastery">掌握度</button>
+        <button type="button" class="nav-item" data-view="politics">政治</button>
       </nav>
     </div>
   </header>
@@ -124,7 +125,10 @@
           <h2 id="entryTitle">录一道错题</h2>
           <p>照片或文字都行，选好章节和错因就能收进错题本。</p>
         </div>
-        <span class="soft-note">自动记住上次的科目与章节</span>
+        <div class="entry-head-meta">
+          <span class="round-badge" id="roundCount" hidden>本轮已录 0 道</span>
+          <span class="soft-note">自动记住上次的科目与章节</span>
+        </div>
       </div>
 
       <div class="entry-grid">
@@ -140,12 +144,13 @@
                 <svg viewBox="0 0 24 24"><path d="M12 16V5m0 0-3.5 3.5M12 5l3.5 3.5M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </span>
               <strong>点击上传或拖入图片</strong>
-              <span>支持相机拍摄 · JPG / PNG · 15MB 内</span>
+              <span>支持相机拍摄 · 上传后自动识别文字 · JPG / PNG · 15MB 内</span>
             </span>
             <img id="imagePreview" alt="题目照片预览" hidden>
             <button type="button" class="image-remove" id="imageRemove" aria-label="移除图片" hidden>×</button>
           </label>
-          <p class="upload-tip">只上传图片也可以保存，文字稍后再补。</p>
+          <p class="ocr-status" id="ocrStatus" hidden></p>
+          <p class="upload-tip">只上传图片也可以保存；识别结果可修改，手写批注与公式不做文字化。</p>
         </section>
 
         <form class="card entry-form" id="entryForm" novalidate>
@@ -165,8 +170,19 @@
           </div>
 
           <div class="field">
-            <label for="entryContent">题目文字 <span class="label-hint">可选，与照片至少填一项</span></label>
-            <textarea id="entryContent" placeholder="粘贴题干、选项或关键条件…"></textarea>
+            <label for="entryContent">题目文字 <span class="label-hint">照片自动识别，可修改；与照片至少填一项</span></label>
+            <textarea id="entryContent" placeholder="上传照片后自动填入，识别有误可直接改；也可粘贴题干…"></textarea>
+          </div>
+
+          <div class="field-row politics-fields" id="politicsFields" hidden>
+            <div class="field">
+              <label for="entryOptionAnalysis">错选项分析 <span class="label-hint">必填：错的那个选项错在哪</span></label>
+              <textarea id="entryOptionAnalysis" placeholder="如：B 项把“主要矛盾”说成“基本矛盾”，概念偷换。"></textarea>
+            </div>
+            <div class="field">
+              <label for="entryExamYear">年份 <span class="label-hint">可选</span></label>
+              <input id="entryExamYear" type="text" placeholder="如 2024" autocomplete="off">
+            </div>
           </div>
 
           <div class="field">
@@ -190,8 +206,8 @@
           </div>
 
           <div class="form-actions">
-            <p class="form-hint">保存后保留当前科目与章节，方便连续录入</p>
-            <button class="btn btn-primary" type="submit" id="saveBtn">保存错题</button>
+            <p class="form-hint">保存后自动清空照片与文字，保留当前科目与章节，直接录下一道</p>
+            <button class="btn btn-primary" type="submit" id="saveBtn">保存并继续</button>
           </div>
         </form>
       </div>
@@ -354,6 +370,201 @@
       </div>
       <div class="mastery-list" id="masteryList"></div>
     </section>
+    <!-- 政治 -->
+    <section id="view-politics" class="view" aria-labelledby="politicsTitle">
+      <div class="page-head">
+        <div>
+          <p class="eyebrow">考研政治 · 陷阱清单</p>
+          <h2 id="politicsTitle">考点、时政与错题</h2>
+          <p>不做掌握度诊断。这里只负责快速记、快速找、考前快速翻。</p>
+        </div>
+        <span class="soft-note">收藏夹式整理，不计入最该补的三章</span>
+      </div>
+
+      <section class="card politics-search-card" aria-label="统一搜索">
+        <div class="politics-search-box">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m16 16 4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+          <input id="politicsSearch" type="search" placeholder="搜考点 / 时政 / 分析题框架 / 政治错题…" autocomplete="off" aria-label="政治模块统一搜索">
+        </div>
+        <p class="politics-search-hint" id="politicsSearchHint">输入关键词，四类内容一起搜。</p>
+        <div class="politics-results" id="politicsSearchResults" hidden></div>
+      </section>
+
+      <div class="politics-tabs" role="tablist" aria-label="政治模块分区">
+        <button type="button" class="politics-tab is-active" data-ptab="cards" role="tab" aria-selected="true">知识点卡</button>
+        <button type="button" class="politics-tab" data-ptab="affairs" role="tab" aria-selected="false">时政素材</button>
+        <button type="button" class="politics-tab" data-ptab="frameworks" role="tab" aria-selected="false">分析题框架</button>
+        <button type="button" class="politics-tab" data-ptab="questions" role="tab" aria-selected="false">选择题错题</button>
+      </div>
+
+      <!-- 知识点卡 -->
+      <section class="politics-panel is-active" id="panel-cards">
+        <div class="politics-toolbar">
+          <div class="politics-filters">
+            <select id="pCardChapter" aria-label="按大块筛选"></select>
+            <select id="pCardSection" aria-label="按章筛选"></select>
+          </div>
+          <div class="politics-toolbar-side">
+            <span class="politics-count" id="pCardCount"></span>
+            <button type="button" class="btn btn-ghost" id="pCardDeletedToggle">回收站</button>
+            <button type="button" class="btn btn-soft" id="pCardNewToggle">＋ 新建卡片</button>
+          </div>
+        </div>
+
+        <form class="card politics-form" id="pCardForm" hidden>
+          <div class="field-row two">
+            <div class="field">
+              <label for="pCardFormChapter">大块</label>
+              <select id="pCardFormChapter"></select>
+            </div>
+            <div class="field">
+              <label for="pCardFormSection">章</label>
+              <select id="pCardFormSection"></select>
+            </div>
+          </div>
+          <div class="field">
+            <label for="pCardTitle">正面 · 考点名</label>
+            <input id="pCardTitle" type="text" placeholder="如：矛盾的普遍性与特殊性" autocomplete="off" required>
+          </div>
+          <div class="field">
+            <label for="pCardBody">背面 · 关键词 / 一句话解释 <span class="label-hint">支持换行和要点</span></label>
+            <textarea id="pCardBody" placeholder="普遍性：矛盾存在于一切事物中…&#10;特殊性：具体事物矛盾各有特点…"></textarea>
+          </div>
+          <div class="field-row two" id="pCardStatsRow" hidden>
+            <div class="field">
+              <label for="pCardRating">上次自评 <span class="label-hint">误点后可手动修正</span></label>
+              <select id="pCardRating">
+                <option value="">未自评</option>
+                <option value="remembered">记住了</option>
+                <option value="forgotten">没记住</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="pCardViewCount">看过次数</label>
+              <input id="pCardViewCount" type="number" min="0" step="1" value="0">
+            </div>
+          </div>
+          <p class="form-hint" id="pCardFormHint">保存后可随时点卡片上的「编辑」改内容。</p>
+          <div class="politics-form-actions">
+            <button type="button" class="btn btn-ghost" id="pCardCancel">取消</button>
+            <button type="submit" class="btn btn-primary" id="pCardSave">保存卡片</button>
+          </div>
+        </form>
+
+        <div class="knowledge-grid" id="cardList"></div>
+      </section>
+
+      <!-- 时政素材 -->
+      <section class="politics-panel" id="panel-affairs">
+        <div class="politics-toolbar">
+          <div class="politics-filters">
+            <select id="pAffairTag" aria-label="按标签筛选"><option value="">全部标签</option></select>
+            <select id="pAffairPointFilter" aria-label="按考点筛选"><option value="">全部关联考点</option></select>
+          </div>
+          <div class="politics-toolbar-side">
+            <span class="politics-count" id="pAffairCount"></span>
+            <button type="button" class="btn btn-ghost" id="pAffairDeletedToggle">回收站</button>
+            <button type="button" class="btn btn-soft" id="pAffairNewToggle">＋ 记一条时政</button>
+          </div>
+        </div>
+
+        <form class="card politics-form" id="pAffairForm" hidden>
+          <div class="field-row three">
+            <div class="field">
+              <label for="pAffairDate">日期</label>
+              <input id="pAffairDate" type="date" required>
+            </div>
+            <div class="field">
+              <label for="pAffairTitle">事件</label>
+              <input id="pAffairTitle" type="text" placeholder="如：中央经济工作会议召开" autocomplete="off" required>
+            </div>
+            <div class="field">
+              <label for="pAffairTags">标签 <span class="label-hint">逗号分隔</span></label>
+              <input id="pAffairTags" type="text" placeholder="经济, 会议" autocomplete="off">
+            </div>
+          </div>
+          <div class="field">
+            <label for="pAffairPoint">关联考点</label>
+            <input id="pAffairPoint" type="text" placeholder="如：高质量发展 / 供给侧结构性改革" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="pAffairNote">备注 <span class="label-hint">可选，记一句命题角度</span></label>
+            <textarea id="pAffairNote" placeholder="可能从“为什么”或“怎么做”角度命题…"></textarea>
+          </div>
+          <div class="politics-form-actions">
+            <button type="button" class="btn btn-ghost" id="pAffairCancel">取消</button>
+            <button type="submit" class="btn btn-primary" id="pAffairSave">保存时政</button>
+          </div>
+        </form>
+
+        <div class="affair-list" id="affairList"></div>
+      </section>
+
+      <!-- 分析题框架 -->
+      <section class="politics-panel" id="panel-frameworks">
+        <div class="politics-toolbar">
+          <div class="politics-filters">
+            <select id="pFrameworkType" aria-label="按题型筛选">
+              <option value="">全部题型</option>
+              <option>原理类</option>
+              <option>意义类</option>
+              <option>措施类</option>
+              <option>其他</option>
+            </select>
+          </div>
+          <div class="politics-toolbar-side">
+            <span class="politics-count" id="pFrameworkCount"></span>
+            <button type="button" class="btn btn-ghost" id="pFrameworkDeletedToggle">回收站</button>
+            <button type="button" class="btn btn-soft" id="pFrameworkNewToggle">＋ 新建框架</button>
+          </div>
+        </div>
+
+        <form class="card politics-form" id="pFrameworkForm" hidden>
+          <div class="field-row two">
+            <div class="field">
+              <label for="pFwType">题型</label>
+              <select id="pFwType">
+                <option>原理类</option>
+                <option>意义类</option>
+                <option>措施类</option>
+                <option>其他</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="pFwKeywords">关键词 <span class="label-hint">逗号分隔</span></label>
+              <input id="pFwKeywords" type="text" placeholder="原理, 方法论, 结合材料" autocomplete="off">
+            </div>
+          </div>
+          <div class="field">
+            <label for="pFwTemplate">答题模板</label>
+            <textarea id="pFwTemplate" placeholder="① 点明原理…&#10;② 结合材料…&#10;③ 回扣设问…"></textarea>
+          </div>
+          <div class="politics-form-actions">
+            <button type="button" class="btn btn-ghost" id="pFwCancel">取消</button>
+            <button type="submit" class="btn btn-primary" id="pFwSave">保存框架</button>
+          </div>
+        </form>
+
+        <div class="framework-list" id="frameworkList"></div>
+      </section>
+
+      <!-- 政治选择题错题 -->
+      <section class="politics-panel" id="panel-questions">
+        <div class="politics-toolbar">
+          <div class="politics-filters">
+            <select id="pQChapter" aria-label="按大块筛选"></select>
+            <select id="pQCause" aria-label="按错因筛选"></select>
+            <input id="pQYear" type="text" placeholder="年份，如 2024" aria-label="按年份筛选" autocomplete="off">
+          </div>
+          <div class="politics-toolbar-side">
+            <span class="politics-count" id="pQCount"></span>
+            <button type="button" class="btn btn-ghost" id="pQDeletedToggle">回收站</button>
+            <button type="button" class="btn btn-soft" id="pQNew">＋ 录政治选择题</button>
+          </div>
+        </div>
+        <div class="politics-question-list" id="politicsQuestionList"></div>
+      </section>
+    </section>
   </main>
 
   <!-- 详情弹窗 -->
@@ -375,6 +586,7 @@
           <span>点击查看原图</span>
         </a>
         <p class="detail-content" id="detailContent"></p>
+        <p class="detail-extra" id="detailExtra" hidden></p>
         <div class="detail-answers">
           <div class="answer-block">
             <span>我的答案</span>
@@ -392,6 +604,22 @@
             <h3 id="editTitle">修正分类</h3>
             <span>改完立即生效</span>
           </div>
+          <div id="detailEditPolitics" hidden>
+            <div class="field">
+              <label for="detailContentEdit">题干文字 <span class="label-hint">可改 OCR 识别错字</span></label>
+              <textarea id="detailContentEdit" placeholder="题干文字…"></textarea>
+            </div>
+            <div class="field-row two">
+              <div class="field">
+                <label for="detailOptionAnalysis">错选项分析 <span class="label-hint">必填</span></label>
+                <textarea id="detailOptionAnalysis" placeholder="错误选项错在哪…"></textarea>
+              </div>
+              <div class="field">
+                <label for="detailExamYear">年份</label>
+                <input id="detailExamYear" type="text" placeholder="如 2024" autocomplete="off">
+              </div>
+            </div>
+          </div>
           <div class="field-row three">
             <div class="field">
               <label for="detailChapter">章</label>
@@ -408,6 +636,8 @@
           </div>
           <div class="edit-actions">
             <button type="button" class="btn btn-primary" id="detailSave">保存修改</button>
+            <button type="button" class="btn btn-danger-soft" id="detailDelete" hidden>移入回收站</button>
+            <button type="button" class="btn btn-soft" id="detailRestore" hidden>从回收站恢复</button>
           </div>
         </section>
       </div>
